@@ -29,3 +29,10 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+
+    - name: Buildah Action
+      uses: redhat-actions/buildah-build@v2
+      with:
+        tags: quay.io/ocp-splat/jira-bot:latest
+        containerfiles: |
+          ./Containerfile      

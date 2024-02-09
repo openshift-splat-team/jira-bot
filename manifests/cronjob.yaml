@@ -1,0 +1,25 @@
+kind: CronJob
+apiVersion: batch/v1
+metadata:
+  name: jira-update
+  namespace: vsphere-infra-helpers
+spec:
+  schedule: '@hourly'
+  concurrencyPolicy: Allow
+  suspend: false
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          containers:
+            - name: jira-bot
+              image: >-
+                quay.io/ocp-splat/jira-bot@sha256:<get latest digest from quay>
+              env:
+                - name: JIRA_PERSONAL_ACCESS_TOKEN
+                  value: <your token>
+          restartPolicy: OnFailure

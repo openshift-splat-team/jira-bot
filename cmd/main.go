@@ -7,6 +7,20 @@ import (
 	jira "github.com/andygrunwald/go-jira"
 )
 
+const (
+	FieldStoryPoints   = "customfield_12310243"
+	FieldStatusSummary = "customfield_12320841"
+)
+
+func getStoryPoints(totalMap map[string]interface{}) float64 {
+	if points, exists := totalMap[FieldStoryPoints]; exists {
+		if points != nil {
+			return points.(float64)
+		}
+	}
+	return 0
+}
+
 func main() {
 	token := os.Getenv("JIRA_PERSONAL_ACCESS_TOKEN")
 	if len(token) == 0 {
@@ -23,6 +37,7 @@ func main() {
 		panic(err)
 	}
 	for _, issue := range issues {
+		fmt.Printf("\nchecking epic %s\n", issue.Fields.Summary)
 		childIssues, _, err := jiraClient.Issue.Search(fmt.Sprintf("\"Parent Link\" = \"%s\"", issue.Key), nil)
 		if err != nil {
 			fmt.Printf("unable to get child issues for %s: %v", issue.Key, err)
@@ -35,7 +50,7 @@ func main() {
 		inprogressPoints := 0.0
 		unsizedStories := 0
 		for _, childIssue := range childIssues {
-			points := childIssue.Fields.StoryPoints
+			points := getStoryPoints(childIssue.Fields.Unknowns)
 			aggregatePoints += points
 			if childIssue.Fields.Status.Name == "Closed" {
 				completedPoints += points
@@ -48,10 +63,16 @@ func main() {
 		}
 		fmt.Printf("%f total points\n", aggregatePoints)
 
+		statusSummary := fmt.Sprintf("completed: %.0f/%.0f\nin progress: %.0f/%.0f\nunsized stories: %d", completedPoints, aggregatePoints, inprogressPoints, aggregatePoints, unsizedStories)
+
+		if statusSummary == issue.Fields.Unknowns[FieldStatusSummary] {
+			fmt.Println("no update")
+			continue
+		}
 		propertyMap := map[string]interface{}{
 			"fields": map[string]interface{}{
-				"customfield_12310243": aggregatePoints,
-				"customfield_12320841": fmt.Sprintf("completed: %.0f/%.0f\nin progress: %.0f/%.0f\nunsized stories: %d", completedPoints, aggregatePoints, inprogressPoints, aggregatePoints, unsizedStories),
+				FieldStoryPoints:   aggregatePoints,
+				FieldStatusSummary: statusSummary,
 			},
 		}
 		resp, err := jiraClient.Issue.UpdateIssue(issue.Key, propertyMap)

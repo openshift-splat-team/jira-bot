@@ -2,10 +2,7 @@ module github.com/openshift-splat-team/splat-jira-bot
 
 go 1.21
 
-require (
-	github.com/andygrunwald/go-jira v1.16.0
-	github.com/davecgh/go-spew v1.1.1
-)
+require github.com/andygrunwald/go-jira v1.16.0
 
 require (
 	github.com/fatih/structs v1.1.0 // indirect

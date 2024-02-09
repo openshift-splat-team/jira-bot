@@ -118,7 +118,6 @@ type IssueFields struct {
 	Watches                       *Watches          `json:"watches,omitempty" structs:"watches,omitempty"`
 	Assignee                      *User             `json:"assignee,omitempty" structs:"assignee,omitempty"`
 	Updated                       Time              `json:"updated,omitempty" structs:"updated,omitempty"`
-	StoryPoints                   float64           `json:"customfield_12310243" structs:"customfield_12310243,omitempty"`
 	Description                   string            `json:"description,omitempty" structs:"description,omitempty"`
 	Summary                       string            `json:"summary,omitempty" structs:"summary,omitempty"`
 	Creator                       *User             `json:"Creator,omitempty" structs:"Creator,omitempty"`
@@ -166,6 +165,7 @@ func (i *IssueFields) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON is a custom JSON marshal function for the IssueFields structs.
 // It handles Jira custom fields and maps those from / to "Unknowns" key.
 func (i *IssueFields) UnmarshalJSON(data []byte) error {
+
 	// Do the normal unmarshalling first
 	// Details for this way: http://choly.ca/post/go-json-marshalling/
 	type Alias IssueFields
@@ -205,12 +205,6 @@ func (i *IssueFields) UnmarshalJSON(data []byte) error {
 
 	}
 	i = (*IssueFields)(aux.Alias)
-
-	/*	if points, exists := totalMap["customfield_12310243"]; exists {
-		if points != nil {
-			i.StoryPoints = points.(float64)
-		}
-	}*/
 	// all the tags found in the struct were removed. Whatever is left are unknowns to struct
 	i.Unknowns = totalMap
 	return nil
@@ -619,7 +613,7 @@ type RemoteLinkStatus struct {
 // This can be an issue id, or an issue key.
 // If the issue cannot be found via an exact match, Jira will also look for the issue in a case-insensitive way, or by looking to see if the issue was moved.
 //
-// # The given options will be appended to the query string
+// The given options will be appended to the query string
 //
 // Jira API docs: https://docs.atlassian.com/jira/REST/latest/#api/2/issue-getIssue
 func (s *IssueService) GetWithContext(ctx context.Context, issueID string, options *GetQueryOptions) (*Issue, *Response, error) {
@@ -1301,17 +1295,15 @@ func (s *IssueService) DoTransitionWithPayload(ticketID, payload interface{}) (*
 }
 
 // InitIssueWithMetaAndFields returns Issue with with values from fieldsConfig properly set.
-//   - metaProject should contain metaInformation about the project where the issue should be created.
-//   - metaIssuetype is the MetaInformation about the Issuetype that needs to be created.
-//   - fieldsConfig is a key->value pair where key represents the name of the field as seen in the UI
-//     And value is the string value for that particular key.
-//
+//  * metaProject should contain metaInformation about the project where the issue should be created.
+//  * metaIssuetype is the MetaInformation about the Issuetype that needs to be created.
+//  * fieldsConfig is a key->value pair where key represents the name of the field as seen in the UI
+//		And value is the string value for that particular key.
 // Note: This method doesn't verify that the fieldsConfig is complete with mandatory fields. The fieldsConfig is
-//
-//	supposed to be already verified with MetaIssueType.CheckCompleteAndAvailable. It will however return
-//	error if the key is not found.
-//	All values will be packed into Unknowns. This is much convenient. If the struct fields needs to be
-//	configured as well, marshalling and unmarshalling will set the proper fields.
+//		 supposed to be already verified with MetaIssueType.CheckCompleteAndAvailable. It will however return
+//		 error if the key is not found.
+//		 All values will be packed into Unknowns. This is much convenient. If the struct fields needs to be
+//		 configured as well, marshalling and unmarshalling will set the proper fields.
 func InitIssueWithMetaAndFields(metaProject *MetaProject, metaIssuetype *MetaIssueType, fieldsConfig map[string]string) (*Issue, error) {
 	issue := new(Issue)
 	issueFields := new(IssueFields)

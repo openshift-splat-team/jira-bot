@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	jira "github.com/andygrunwald/go-jira"
 )
@@ -73,7 +74,19 @@ func main() {
 			}
 		}
 
-		statusSummary := fmt.Sprintf("completed: %.0f/%.0f\nin progress: %.0f/%.0f\nunsized stories: %d", completedPoints, aggregatePoints, inprogressPoints, aggregatePoints, unsizedStories)
+		messages := []string{}
+
+		if unsizedStories > 0 {
+			messages = append(messages, fmt.Sprintf("unsized stories: %d", unsizedStories))
+		}
+
+		if completedPoints == aggregatePoints && unsizedStories == 0 {
+			messages = []string{}
+		} else {
+			messages = append(messages, fmt.Sprintf("C/I/T: %.0f/%.0f/%.0f", completedPoints, inprogressPoints, aggregatePoints))
+		}
+
+		statusSummary := strings.Join(messages, "\n")
 
 		if statusSummary == issue.Fields.Unknowns[FieldStatusSummary] {
 			fmt.Println("no update")

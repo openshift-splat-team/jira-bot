@@ -34,8 +34,10 @@ func main() {
 	jiraClient, _ := jira.NewClient(tp.Client(), "https://issues.redhat.com/")
 	issues, _, err := jiraClient.Issue.Search("filter = \"SPLAT Team - Epics 4.16\"", nil)
 	if err != nil {
-		panic(err)
+		fmt.Printf("unable to get epics: %v", err)
+		os.Exit(1)
 	}
+
 	for _, issue := range issues {
 		fmt.Printf("\nchecking epic %s\n", issue.Fields.Summary)
 		childIssues, _, err := jiraClient.Issue.Search(fmt.Sprintf("\"Parent Link\" = \"%s\"", issue.Key), nil)
@@ -44,11 +46,11 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("%d child issues\n", len(childIssues))
 		aggregatePoints := 0.0
 		completedPoints := 0.0
 		inprogressPoints := 0.0
 		unsizedStories := 0
+
 		for _, childIssue := range childIssues {
 			points := getStoryPoints(childIssue.Fields.Unknowns)
 			aggregatePoints += points
@@ -57,11 +59,19 @@ func main() {
 			} else if childIssue.Fields.Status.Name != "Backlog" {
 				inprogressPoints += points
 			}
-			if points == 0 {
+		}
+
+		unpointedIssues, _, err := jiraClient.Issue.Search(fmt.Sprintf("filter = \"OpenShift SPLAT - No story points assigned\" AND \"Parent Link\" = \"%s\"", issue.Key), nil)
+		if err != nil {
+			fmt.Printf("unable to get child issues for %s: %v", issue.Key, err)
+			continue
+		}
+
+		for _, unpointedIssue := range unpointedIssues {
+			if getStoryPoints(unpointedIssue.Fields.Unknowns) == 0 {
 				unsizedStories++
 			}
 		}
-		fmt.Printf("%f total points\n", aggregatePoints)
 
 		statusSummary := fmt.Sprintf("completed: %.0f/%.0f\nin progress: %.0f/%.0f\nunsized stories: %d", completedPoints, aggregatePoints, inprogressPoints, aggregatePoints, unsizedStories)
 

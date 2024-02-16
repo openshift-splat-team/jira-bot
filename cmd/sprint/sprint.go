@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var applyFlag bool
+var dryRunFlag bool
 
 var cmdSprint = &cobra.Command{
 	Use:   "sprint",
@@ -14,8 +14,8 @@ var cmdSprint = &cobra.Command{
 
 func Initialize(rootCmd *cobra.Command) {
 
-	cmdMoveIssue.Flags().BoolVarP(&applyFlag, "apply", "a", false, "Apply the changes")
-	cmdMoveInQuery.Flags().BoolVarP(&applyFlag, "apply", "a", false, "Apply the changes")
+	cmdMoveIssue.Flags().BoolVarP(&dryRunFlag, "dry-run", "d", true, "only apply changes with --dry-run=false")
+	cmdMoveInQuery.Flags().BoolVarP(&dryRunFlag, "dry-run", "d", true, "only apply changes with --dry-run=false")
 	cmdSprint.AddCommand(cmdMoveIssue)
 	cmdSprint.AddCommand(cmdMoveInQuery)
 	rootCmd.AddCommand(cmdSprint)

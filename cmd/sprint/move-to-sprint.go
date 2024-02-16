@@ -59,14 +59,14 @@ func moveToSprint(client *jira.Client, sprintNumber string, issues []string) err
 
 	log.Printf("found sprint %s\n", sprintNumber)
 
-	if applyFlag {
+	if !dryRunFlag {
 		log.Printf("moving issues in to sprint\n")
 		_, err = client.Sprint.MoveIssuesToSprint(sprint.ID, issues)
 		if err != nil {
 			return fmt.Errorf("unable to move issues to sprint %s: %v", sprintNumber, err)
 		}
 	} else {
-		log.Printf("issues: %s would have been moved to sprint %s. run again and use -a to apply.", strings.Join(issues, ","), sprintNumber)
+		log.Printf("issues: %s would have been moved to sprint %s. run again and provide --dry-run=false to apply.", strings.Join(issues, ","), sprintNumber)
 	}
 
 	return err

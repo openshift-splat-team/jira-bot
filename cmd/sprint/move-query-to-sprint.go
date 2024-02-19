@@ -11,7 +11,7 @@ var cmdMoveInQuery = &cobra.Command{
 	Use:   "move-in-query [sprint-number] [JQL query]...",
 	Short: "Moves all issues returned by a JQL query",
 	Long:  `This command allows you to remove an issue from a sprint in your project management tool.`,
-	Args:  cobra.MinimumNArgs(2), // Requires exactly two arguments: sprint-number and issue-number
+	Args:  cobra.ExactArgs(2), // Requires exactly two arguments: sprint-number and issue-number
 	Run: func(cmd *cobra.Command, args []string) {
 		err := util.CheckForMissingEnvVars()
 		if err != nil {

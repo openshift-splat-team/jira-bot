@@ -76,7 +76,7 @@ var cmdMoveIssue = &cobra.Command{
 	Use:   "move-issue [sprint-number] [issue-number]...",
 	Short: "Move an issue to a sprint",
 	Long:  `This command allows you to move one or more issues to a sprint in your project management tool.`,
-	Args:  cobra.MinimumNArgs(2), // Requires exactly two arguments: sprint-number and issue-number
+	Args:  cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		err := util.CheckForMissingEnvVars()
 		if err != nil {

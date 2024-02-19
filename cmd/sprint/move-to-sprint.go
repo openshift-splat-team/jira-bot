@@ -13,7 +13,27 @@ import (
 )
 
 func moveToSprint(client *jira.Client, sprintNumber string, issues []string) error {
-	log.Printf("moving %d issues to sprint %s\n", len(issues), sprintNumber)
+
+	issuesInSprint, _, err := client.Issue.Search(fmt.Sprintf("issuekey in (%s) AND Sprint IS NOT EMPTY", strings.Join(issues, ",")), &jira.SearchOptions{})
+	if err != nil {
+		return fmt.Errorf("unable to getting issues: %v", err)
+	}
+
+	if len(issuesInSprint) > 0 {
+		alreadyAssignedToSprint := []string{}
+		for _, issueInSprint := range issuesInSprint {
+			alreadyAssignedToSprint = append(alreadyAssignedToSprint, issueInSprint.ID)
+		}
+
+		log.Printf("some issues are already assigned to a sprint: %s\n", strings.Join(alreadyAssignedToSprint, ", "))
+		if overrideFlag {
+			log.Printf("some issues are already assigned to a sprint but --override=true was provided. assigning to sprint\n")
+		} else {
+			return fmt.Errorf("some issues are already assigned to a sprint. to move them anyway, run again and provide --override=true to apply")
+		}
+	}
+
+	log.Printf("trying to move %d issues to sprint %s\n", len(issues), sprintNumber)
 	boards, _, err := client.Board.GetAllBoards(&jira.BoardListOptions{
 		ProjectKeyOrID: viper.GetString("project"),
 	})

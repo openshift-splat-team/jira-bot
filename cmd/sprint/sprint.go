@@ -5,6 +5,7 @@ import (
 )
 
 var dryRunFlag bool
+var overrideFlag bool
 
 var cmdSprint = &cobra.Command{
 	Use:   "sprint",
@@ -16,6 +17,9 @@ func Initialize(rootCmd *cobra.Command) {
 
 	cmdMoveIssue.Flags().BoolVarP(&dryRunFlag, "dry-run", "d", true, "only apply changes with --dry-run=false")
 	cmdMoveInQuery.Flags().BoolVarP(&dryRunFlag, "dry-run", "d", true, "only apply changes with --dry-run=false")
+	cmdMoveIssue.Flags().BoolVarP(&overrideFlag, "override", "o", false, "adds issue to a sprint regardless if that issue is already in a sprint with --override=true")
+	cmdMoveInQuery.Flags().BoolVarP(&overrideFlag, "override", "o", false, "adds issue to a sprint regardless if that issue is already in a sprint with --override=true")
+
 	cmdSprint.AddCommand(cmdMoveIssue)
 	cmdSprint.AddCommand(cmdMoveInQuery)
 	rootCmd.AddCommand(cmdSprint)

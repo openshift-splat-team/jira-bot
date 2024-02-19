@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -25,7 +24,7 @@ func main() {
 	sprint.Initialize(rootCmd)
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		log.Fatalf("error: %v", err)
 		os.Exit(1)
 	}
 }

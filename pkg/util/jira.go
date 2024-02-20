@@ -8,6 +8,11 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	FieldStoryPoints   = "customfield_12310243"
+	FieldStatusSummary = "customfield_12320841"
+)
+
 func GetJiraClient() (*jira.Client, error) {
 	token := viper.GetString("personal_access_token")
 
@@ -30,4 +35,13 @@ func GetIssuesInQuery(client *jira.Client, query string) ([]jira.Issue, []string
 	}
 	log.Printf("found %d issues\n", len(issues))
 	return issues, issueIds, nil
+}
+
+func GetStoryPoints(totalMap map[string]interface{}) float64 {
+	if points, exists := totalMap[FieldStoryPoints]; exists {
+		if points != nil {
+			return points.(float64)
+		}
+	}
+	return 0
 }

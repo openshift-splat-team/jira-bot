@@ -1,30 +1,34 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/openshift-splat-team/splat-jira-bot/cmd/epic"
+	"github.com/openshift-splat-team/splat-jira-bot/cmd/issue"
 	"github.com/openshift-splat-team/splat-jira-bot/cmd/sprint"
 	"github.com/openshift-splat-team/splat-jira-bot/pkg/util"
 	"github.com/spf13/cobra"
 )
 
-func initConfig() {
-	util.BindEnvVars()
+func initConfig() error {
+	return util.BindEnvVars()
 }
 
 func main() {
 	log.SetOutput(os.Stdout)
-	initConfig()
+	err := initConfig()
+	if err != nil {
+		util.RuntimeError(fmt.Errorf("unable to initialize: %v", err))
+	}
 
 	var rootCmd = &cobra.Command{Use: "jira-splat-bot"}
 
 	epic.Initialize(rootCmd)
 	sprint.Initialize(rootCmd)
-
+	issue.Initialize(rootCmd)
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatalf("error: %v", err)
-		os.Exit(1)
+		util.RuntimeError(fmt.Errorf("error while running command: %v", err))
 	}
 }

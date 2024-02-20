@@ -8,20 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	FieldStoryPoints   = "customfield_12310243"
-	FieldStatusSummary = "customfield_12320841"
-)
-
-func getStoryPoints(totalMap map[string]interface{}) float64 {
-	if points, exists := totalMap[FieldStoryPoints]; exists {
-		if points != nil {
-			return points.(float64)
-		}
-	}
-	return 0
-}
-
 func updateEpicStatus() error {
 	jiraClient, err := util.GetJiraClient()
 	if err != nil {
@@ -47,7 +33,7 @@ func updateEpicStatus() error {
 		unsizedStories := 0
 
 		for _, childIssue := range childIssues {
-			points := getStoryPoints(childIssue.Fields.Unknowns)
+			points := util.GetStoryPoints(childIssue.Fields.Unknowns)
 			aggregatePoints += points
 			if childIssue.Fields.Status.Name == "Closed" {
 				completedPoints += points
@@ -63,7 +49,7 @@ func updateEpicStatus() error {
 		}
 
 		for _, unpointedIssue := range unpointedIssues {
-			if getStoryPoints(unpointedIssue.Fields.Unknowns) == 0 {
+			if util.GetStoryPoints(unpointedIssue.Fields.Unknowns) == 0 {
 				unsizedStories++
 			}
 		}
@@ -82,22 +68,19 @@ func updateEpicStatus() error {
 
 		statusSummary := strings.Join(messages, "\n")
 
-		if statusSummary == issue.Fields.Unknowns[FieldStatusSummary] {
+		if statusSummary == issue.Fields.Unknowns[util.FieldStatusSummary] {
 			fmt.Println("no update")
 			continue
 		}
 		propertyMap := map[string]interface{}{
 			"fields": map[string]interface{}{
-				FieldStoryPoints:   aggregatePoints,
-				FieldStatusSummary: statusSummary,
+				util.FieldStoryPoints:   aggregatePoints,
+				util.FieldStatusSummary: statusSummary,
 			},
 		}
-		resp, err := jiraClient.Issue.UpdateIssue(issue.Key, propertyMap)
+		_, err = jiraClient.Issue.UpdateIssue(issue.Key, propertyMap)
 		if err != nil {
 			fmt.Printf("unable to update epic %s: %v\n", issue.Key, err)
-			b := []byte{}
-			resp.Response.Body.Read(b)
-			fmt.Println(string(b))
 			continue
 		}
 	}
@@ -107,9 +90,12 @@ func updateEpicStatus() error {
 var cmdUpdateEpicStatus = &cobra.Command{
 	Use:   "update-epic-status",
 	Short: "Update the status of an epic",
-	Long:  `This command allows you to update the status of an epic in your project management tool.`,
+	Long:  `This command automates the generation of epic status.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		updateEpicStatus()
+		err := updateEpicStatus()
+		if err != nil {
+			util.RuntimeError(fmt.Errorf("unable to update epic status: %v", err))
+		}
 	},
 }
 

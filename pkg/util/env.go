@@ -18,10 +18,14 @@ func CheckForMissingEnvVars() error {
 	return nil
 }
 
-func BindEnvVars() {
+func BindEnvVars() error {
 	viper.SetEnvPrefix("jira") // Set a prefix for environment variables
 	for _, envVar := range bindEnvVars {
-		viper.BindEnv(envVar)
+		err := viper.BindEnv(envVar)
+		if err != nil {
+			return fmt.Errorf("unable to bind env var %s: %v", envVar, err)
+		}
 	}
 	viper.AutomaticEnv() // Automatically read environment variables
+	return nil
 }

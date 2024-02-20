@@ -2,6 +2,8 @@ name: golangci-lint
 on:
   pull_request:
     types: [synchronize]
+    branches: [ "main" ]
+  
 
 permissions:
   contents: read

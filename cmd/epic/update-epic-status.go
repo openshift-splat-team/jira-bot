@@ -92,7 +92,10 @@ var cmdUpdateEpicStatus = &cobra.Command{
 	Short: "Update the status of an epic",
 	Long:  `This command automates the generation of epic status.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		updateEpicStatus()
+		err := updateEpicStatus()
+		if err != nil {
+			util.RuntimeError(fmt.Errorf("unable to update epic status: %v", err))
+		}
 	},
 }
 

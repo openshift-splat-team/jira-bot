@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -11,13 +12,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func initConfig() {
-	util.BindEnvVars()
+func initConfig() error {
+	return util.BindEnvVars()
 }
 
 func main() {
 	log.SetOutput(os.Stdout)
-	initConfig()
+	err := initConfig()
+	if err != nil {
+		util.RuntimeError(fmt.Errorf("unable to initialize: %v", err))
+	}
 
 	var rootCmd = &cobra.Command{Use: "jira-splat-bot"}
 
@@ -25,7 +29,6 @@ func main() {
 	sprint.Initialize(rootCmd)
 	issue.Initialize(rootCmd)
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatalf("error: %v", err)
-		os.Exit(1)
+		util.RuntimeError(fmt.Errorf("error while running command: %v", err))
 	}
 }

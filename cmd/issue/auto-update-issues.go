@@ -22,7 +22,6 @@ type autoUpdateIssueOptions struct {
 
 func (a *autoUpdateIssueOptions) checkSetSpikePoints(client *jira.Client, issue jira.Issue) error {
 	if issue.Fields.Type.Name == "Spike" {
-
 		if util.GetStoryPoints(issue.Fields.Unknowns) > 0 && !a.overrideFlag {
 			log.Fatalf("issue: %s already has assigned story points.  run again and provide --override=true to apply", issue.Key)
 			return nil
@@ -51,6 +50,7 @@ func (a *autoUpdateIssueOptions) checkSetSpikePoints(client *jira.Client, issue 
 
 // autoUpdateIssuesInQuery according to rules set forth by the team
 func (a *autoUpdateIssueOptions) autoUpdateIssuesInQuery(jql string) error {
+	log.Printf("preparing to auto-update issues found in query: %s", jql)
 	jiraClient, err := util.GetJiraClient()
 	if err != nil {
 		return fmt.Errorf("unable to get Jira client: %v", err)
@@ -60,6 +60,8 @@ func (a *autoUpdateIssueOptions) autoUpdateIssuesInQuery(jql string) error {
 	if err != nil {
 		return fmt.Errorf("unable to get issues: %v", err)
 	}
+
+	log.Printf("%d issues found in query", len(issues))
 
 	for _, issue := range issues {
 		if a.defaultSpikeStoryPoints > 0 {
@@ -76,7 +78,7 @@ func Initialize(rootCmd *cobra.Command) {
 	options := autoUpdateIssueOptions{}
 
 	cmdAutoUpdateIssuesStatus := &cobra.Command{
-		Use:   "auto-update-issues <jql>",
+		Use:   "auto-update-issues [jql]",
 		Short: "Updates issues according to rules provided as options.",
 		Long:  `Updates issues matching the JQL provided according to rules provided as options`,
 		Args:  cobra.ExactArgs(1),

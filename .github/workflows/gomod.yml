@@ -5,7 +5,12 @@ name: Go Mod
 
 on:
   pull_request:
-    types: [synchronize]
+    branches:
+      - main
+      - release-*
+  push:
+    tags:
+      - '*'
 
 jobs:
   build:

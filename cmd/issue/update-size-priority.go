@@ -51,15 +51,17 @@ func checkSetPriority(client *jira.Client, issue jira.Issue, options *issueComma
 
 	var priority *jira.Priority
 
+	priorities := []string{}
+
 	for _, knownPriority := range knownPriorities {
+		priorities = append(priorities, knownPriority.Name)
 		if strings.EqualFold(knownPriority.Name, strings.ToLower(options.priority)) {
 			priority = &knownPriority
-			break
 		}
 	}
 
 	if priority == nil {
-		return fmt.Errorf("priority %s does not match a known priority", options.priority)
+		return fmt.Errorf("priority %s does not match a known priority: %s", options.priority, strings.Join(priorities, ","))
 	}
 
 	if issue.Fields.Priority == nil || options.overrideFlag {
@@ -78,6 +80,41 @@ func checkSetPriority(client *jira.Client, issue jira.Issue, options *issueComma
 			if err != nil {
 				return fmt.Errorf("unable to update issue %s: %v", issue.Key, err)
 			}
+		}
+	}
+
+	return nil
+}
+
+func checkSetState(client *jira.Client, issue jira.Issue, options *issueCommandOptions) error {
+	log.Printf("attempting to transition issue to %s", options.state)
+	transitions, _, err := client.Issue.GetTransitions(issue.ID)
+	if err != nil {
+		return fmt.Errorf("unable to get known transitions: %v", err)
+	}
+
+	var status *jira.Transition
+
+	transitionList := []string{}
+	for idx, transition := range transitions {
+		transitionList = append(transitionList, transition.Name)
+		if strings.EqualFold(transition.Name, strings.ToLower(options.state)) {
+			status = &transitions[idx]
+		}
+	}
+
+	if status == nil {
+		return fmt.Errorf("state %s does not match a known transition: %s", options.state, strings.Join(transitionList, ","))
+	}
+
+	if options.dryRunFlag {
+		log.Printf("issue: %s would have been updated. run again and provide --dry-run=false to apply.", issue.Key)
+		return nil
+	} else {
+		log.Printf("transitioning to \"%s\" for issue: %s", status.Name, issue.Key)
+		_, err := client.Issue.DoTransition(issue.Key, status.ID)
+		if err != nil {
+			return fmt.Errorf("unable to update issue %s: %v", issue.Key, err)
 		}
 	}
 
@@ -110,6 +147,12 @@ func updateSizeAndPriority(issue string, options *issueCommandOptions) error {
 			err = checkSetPriority(jiraClient, issue, options)
 			if err != nil {
 				return fmt.Errorf("unable to set story priority: %v", err)
+			}
+		}
+		if len(options.state) > 0 {
+			err = checkSetState(jiraClient, issue, options)
+			if err != nil {
+				return fmt.Errorf("unable to set story state: %v", err)
 			}
 		}
 	}

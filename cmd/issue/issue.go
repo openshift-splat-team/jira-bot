@@ -9,6 +9,7 @@ type issueCommandOptions struct {
 	points                  int64
 	dryRunFlag              bool
 	overrideFlag            bool
+	state                   string
 	priority                string
 }
 
@@ -30,6 +31,7 @@ func Initialize(rootCmd *cobra.Command) {
 	cmdUpdateSizeAndPriority.Flags().BoolVarP(&options.overrideFlag, "override", "o", false, "overrides a warning when --override=true")
 	cmdUpdateSizeAndPriority.Flags().Int64VarP(&options.points, "points", "p", -1, "points to apply to issue")
 	cmdUpdateSizeAndPriority.Flags().StringVarP(&options.priority, "priority", "r", "", "priority to set")
+	cmdUpdateSizeAndPriority.Flags().StringVarP(&options.state, "state", "s", "", "sets the issue state")
 
 	cmdAutoUpdateIssuesStatus.Flags().BoolVarP(&options.overrideFlag, "override", "o", false, "overrides a warning when --override=true")
 	cmdAutoUpdateIssuesStatus.Flags().Int64VarP(&options.defaultSpikeStoryPoints, "default-spike-points", "s", -1, "points to apply to spikes which have no points")

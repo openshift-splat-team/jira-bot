@@ -2,7 +2,9 @@ package util
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"strings"
 
 	"github.com/andygrunwald/go-jira"
 	"github.com/spf13/viper"
@@ -44,4 +46,50 @@ func GetStoryPoints(totalMap map[string]interface{}) float64 {
 		}
 	}
 	return 0
+}
+
+// GetIssueType retrieves the identified issue type from Jira
+func GetIssueType(project *jira.Project, typeID string) (*jira.IssueType, error) {
+	log.Printf("getting issue type: %s", typeID)
+
+	for _, issueType := range project.IssueTypes {
+		if strings.EqualFold(issueType.Name, typeID) {
+			return &issueType, nil
+		}
+	}
+
+	return nil, fmt.Errorf("unable to find issue type: %s", typeID)
+}
+
+// GetUser retrieves the identified user from Jira
+func GetUser(client *jira.Client, userID string) (*jira.User, error) {
+	log.Printf("getting user: %s", userID)
+
+	user, _, err := client.User.GetSelf()
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %v", err)
+	}
+	return user, nil
+}
+
+// GetProject retrieves the identified project from Jira
+func GetProject(client *jira.Client, projectID string) (*jira.Project, error) {
+	log.Printf("getting project: %s", projectID)
+	project, _, err := client.Project.Get(projectID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get project: %v", err)
+	}
+	return project, nil
+}
+
+func GetResponseBody(resp *jira.Response) (string, error) {
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("unable to read response body: %v", err)
+
+	}
+	return string(body), nil
 }

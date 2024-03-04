@@ -5,10 +5,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/openshift-splat-team/splat-jira-bot/cmd/epic"
-	"github.com/openshift-splat-team/splat-jira-bot/cmd/issue"
-	"github.com/openshift-splat-team/splat-jira-bot/cmd/sprint"
-	"github.com/openshift-splat-team/splat-jira-bot/pkg/util"
+	"github.com/openshift-splat-team/jira-bot/cmd/epic"
+	"github.com/openshift-splat-team/jira-bot/cmd/issue"
+	"github.com/openshift-splat-team/jira-bot/cmd/sprint"
+	"github.com/openshift-splat-team/jira-bot/pkg/util"
 	"github.com/spf13/cobra"
 )
 

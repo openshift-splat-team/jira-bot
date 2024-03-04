@@ -1,5 +1,5 @@
 FROM quay.io/centos/centos:stream9-minimal
-COPY bin/splat-jira-bot .
+COPY bin/jira-bot .
 
-CMD ./splat-jira-bot
+CMD ./jira-bot
 

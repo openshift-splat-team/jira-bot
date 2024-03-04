@@ -3,7 +3,7 @@ package sprint
 import (
 	"fmt"
 
-	"github.com/openshift-splat-team/splat-jira-bot/pkg/util"
+	"github.com/openshift-splat-team/jira-bot/pkg/util"
 	"github.com/spf13/cobra"
 )
 

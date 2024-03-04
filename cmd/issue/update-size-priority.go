@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/andygrunwald/go-jira"
-	"github.com/openshift-splat-team/splat-jira-bot/pkg/util"
+	"github.com/openshift-splat-team/jira-bot/pkg/util"
 	"github.com/spf13/cobra"
 )
 

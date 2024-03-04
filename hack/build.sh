@@ -17,9 +17,9 @@ MODE="${MODE:-release}"
 GIT_COMMIT="${SOURCE_GIT_COMMIT:-$(git rev-parse --verify 'HEAD^{commit}')}"
 GIT_TAG="${BUILD_VERSION:-$(git describe --always --abbrev=40 --dirty)}"
 GOFLAGS="${GOFLAGS:--mod=vendor}"
-LDFLAGS="${LDFLAGS} -X github.com/openshift-splat-team/splat-jira-bot/pkg/version.Raw=${GIT_TAG} -X github.com/openshift-splat-team/splat-jira-bot/pkg/version.Commit=${GIT_COMMIT}"
+LDFLAGS="${LDFLAGS} -X github.com/openshift-splat-team/jira-bot/pkg/version.Raw=${GIT_TAG} -X github.com/openshift-splat-team/jira-bot/pkg/version.Commit=${GIT_COMMIT}"
 TAGS="${TAGS:-}"
-OUTPUT="${OUTPUT:-bin/splat-jira-bot}"
+OUTPUT="${OUTPUT:-bin/jira-bot}"
 export CGO_ENABLED=0
 
 case "${MODE}" in

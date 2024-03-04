@@ -11,6 +11,10 @@ type issueCommandOptions struct {
 	overrideFlag            bool
 	state                   string
 	priority                string
+	summary                 string
+	description             string
+	issueType               string
+	project                 string
 }
 
 var options = issueCommandOptions{
@@ -37,6 +41,7 @@ func Initialize(rootCmd *cobra.Command) {
 	cmdAutoUpdateIssuesStatus.Flags().Int64VarP(&options.defaultSpikeStoryPoints, "default-spike-points", "s", -1, "points to apply to spikes which have no points")
 	cmdAutoUpdateIssuesStatus.Flags().BoolVarP(&options.dryRunFlag, "dry-run", "d", true, "only apply changes with --dry-run=false")
 
+	cmdIssue.AddCommand(cmdCreateIssue)
 	cmdIssue.AddCommand(cmdAutoUpdateIssuesStatus)
 	cmdIssue.AddCommand(cmdUpdateSizeAndPriority)
 	rootCmd.AddCommand(cmdIssue)

@@ -23,7 +23,7 @@ func main() {
 		util.RuntimeError(fmt.Errorf("unable to initialize: %v", err))
 	}
 
-	var rootCmd = &cobra.Command{Use: "jira-splat-bot"}
+	var rootCmd = &cobra.Command{Use: "jira-bot"}
 
 	epic.Initialize(rootCmd)
 	sprint.Initialize(rootCmd)

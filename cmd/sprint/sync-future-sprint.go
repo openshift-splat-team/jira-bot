@@ -89,8 +89,6 @@ func createFutureSprints(ctx context.Context, client *jira.Client, futureSprints
 			continue
 		}
 
-		log.Printf("creating sprint %s\n", sprintName)
-
 		startDate := sprint.StartDate.AddDate(0, 0, 21*i)
 		endDate := sprint.EndDate.AddDate(0, 0, 21*i)
 		newSprint := &jira.Sprint{

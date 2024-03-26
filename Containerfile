@@ -1,5 +1,7 @@
-FROM quay.io/centos/centos:stream9-minimal
-COPY bin/jira-bot .
+FROM golang:1.21
 
-CMD ./jira-bot
-
+WORKDIR /usr/src/app
+COPY . .
+RUN ./hack/build.sh
+RUN mv ./bin/jira-bot ./jira-bot
+CMD ["./jira-bot"]

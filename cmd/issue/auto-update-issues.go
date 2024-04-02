@@ -10,6 +10,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	cmdAutoUpdateIssuesStatus.Flags().BoolVarP(&options.overrideFlag, "override", "o", false, "overrides a warning when --override=true")
+	cmdAutoUpdateIssuesStatus.Flags().Int64VarP(&options.defaultSpikeStoryPoints, "default-spike-points", "s", -1, "points to apply to spikes which have no points")
+	cmdAutoUpdateIssuesStatus.Flags().BoolVarP(&options.dryRunFlag, "dry-run", "d", true, "only apply changes with --dry-run=false")
+	cmdIssue.AddCommand(cmdAutoUpdateIssuesStatus)
+}
+
 func checkSetSpikePoints(client *jira.Client, issue jira.Issue, options *issueCommandOptions) error {	
 	if issue.Fields.Type.Name == "Spike" {
 		if util.GetStoryPoints(issue.Fields.Unknowns) > 0 && !options.overrideFlag {

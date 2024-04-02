@@ -10,6 +10,39 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	cmdUpdateSizeAndPriority.Flags().BoolVarP(&options.dryRunFlag, "dry-run", "d", true, "only apply changes with --dry-run=false")
+	cmdUpdateSizeAndPriority.Flags().BoolVarP(&options.overrideFlag, "override", "o", false, "overrides a warning when --override=true")
+	cmdUpdateSizeAndPriority.Flags().Int64VarP(&options.points, "points", "p", -1, "points to apply to issue")
+	cmdUpdateSizeAndPriority.Flags().StringVarP(&options.priority, "priority", "r", "", "priority to set")
+	cmdUpdateSizeAndPriority.Flags().StringVarP(&options.comment, "comment", "c", "", "comment to append to issue")
+	cmdUpdateSizeAndPriority.Flags().StringVarP(&options.resolution, "resolution", "", "", "resolution to set on an issue")
+	cmdUpdateSizeAndPriority.Flags().StringVarP(&options.state, "state", "s", "", "sets the issue state")
+	cmdIssue.AddCommand(cmdUpdateSizeAndPriority)
+}
+
+// addComment adds a comment to a jira card 
+func addComment(client *jira.Client, issue jira.Issue, options *issueCommandOptions) error {
+	//user, _, err := client.User.GetSelf() 
+	//if err != nil {
+	//	return fmt.Errorf("unable to get self: %v", err)
+	//} 
+	comment := &jira.Comment {
+		Body: options.comment,
+		//Author: *user,
+	}
+
+	if options.dryRunFlag {
+		log.Printf("would have added comment to issue: %s", issue.Key)
+	} else {
+		log.Printf("adding comment to issue %s", issue.Key)
+		_, _, err := client.Issue.AddComment(issue.Key, comment)
+		return err
+	}
+	 
+	return nil
+}
+
 func checkSetPoints(client *jira.Client, issue jira.Issue, options *issueCommandOptions) error {
 	if util.GetStoryPoints(issue.Fields.Unknowns) > 0 && !options.overrideFlag {
 		log.Fatalf("issue: %s already has assigned story points.  run again and provide --override=true to apply", issue.Key)
@@ -121,6 +154,46 @@ func checkSetState(client *jira.Client, issue jira.Issue, options *issueCommandO
 	return nil
 }
 
+func checkSetResolution(client *jira.Client, issue jira.Issue, options *issueCommandOptions) error {
+	log.Printf("attempting to set resolution to %s", options.resolution)
+	resolutions, _, err := client.Resolution.GetList()
+	
+	if err != nil {
+		return fmt.Errorf("unable to get known transitions: %v", err)
+	}
+
+	var status *jira.Resolution  
+
+	resolutionList := []string{}
+	for idx, resolution := range resolutions {
+		resolutionList = append(resolutionList, resolution.Name)
+		if strings.EqualFold(resolution.Name, strings.ToLower(options.resolution)) {
+			status = &resolutions[idx]
+		}
+	}
+
+	if status == nil {
+		return fmt.Errorf("resolution %s does not match a known resultion: %s", options.state, strings.Join(resolutionList, ","))
+	}
+
+	if options.dryRunFlag {
+		log.Printf("issue: %s would have been updated. run again and provide --dry-run=false to apply.", issue.Key)
+		return nil
+	} else {
+		propertyMap := map[string]interface{}{
+			"fields": map[string]interface{}{
+				"resolution": status,
+			},
+		}
+		log.Printf("setting resolution to \"%s\" for issue: %s", status.Name, issue.Key)
+		issue.Fields.Resolution = status
+		client.Issue.UpdateIssue(issue.Key, propertyMap)
+	}
+
+	return nil
+}
+
+
 // updateSizeAndPriority according to rules set forth by the team
 func updateSizeAndPriority(issue string, options *issueCommandOptions) error {
 	log.Printf("preparing to update issue: %s", issue)
@@ -153,6 +226,18 @@ func updateSizeAndPriority(issue string, options *issueCommandOptions) error {
 			err = checkSetState(jiraClient, issue, options)
 			if err != nil {
 				return fmt.Errorf("unable to set story state: %v", err)
+			}
+		}
+		if len(options.resolution) > 0 {
+			err = checkSetResolution(jiraClient, issue, options)
+			if err != nil {
+				return fmt.Errorf("unable to issue resolution: %v", err)
+			}
+		}
+		if len(options.comment) > 0 {  
+			err = addComment(jiraClient, issue, options)
+			if err != nil {  
+				return fmt.Errorf("unable to udpate story: %v", err)
 			}
 		}
 	}

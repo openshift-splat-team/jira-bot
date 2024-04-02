@@ -9,6 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	cmdIssue.AddCommand(cmdCreateIssue)
+}
+
 // CreateIssue creates an issue in a given project.  the creator of the
 // issue will match the user creating the issue.
 func CreateIssue(project, summary, description, issueType string) (*jira.Issue, error) {

@@ -11,6 +11,8 @@ type issueCommandOptions struct {
 	overrideFlag            bool
 	state                   string
 	priority                string
+	comment 				string
+	resolution              string
 	summary                 string
 	description             string
 	issueType               string
@@ -31,18 +33,5 @@ var cmdIssue = &cobra.Command{
 }
 
 func Initialize(rootCmd *cobra.Command) {
-	cmdUpdateSizeAndPriority.Flags().BoolVarP(&options.dryRunFlag, "dry-run", "d", true, "only apply changes with --dry-run=false")
-	cmdUpdateSizeAndPriority.Flags().BoolVarP(&options.overrideFlag, "override", "o", false, "overrides a warning when --override=true")
-	cmdUpdateSizeAndPriority.Flags().Int64VarP(&options.points, "points", "p", -1, "points to apply to issue")
-	cmdUpdateSizeAndPriority.Flags().StringVarP(&options.priority, "priority", "r", "", "priority to set")
-	cmdUpdateSizeAndPriority.Flags().StringVarP(&options.state, "state", "s", "", "sets the issue state")
-
-	cmdAutoUpdateIssuesStatus.Flags().BoolVarP(&options.overrideFlag, "override", "o", false, "overrides a warning when --override=true")
-	cmdAutoUpdateIssuesStatus.Flags().Int64VarP(&options.defaultSpikeStoryPoints, "default-spike-points", "s", -1, "points to apply to spikes which have no points")
-	cmdAutoUpdateIssuesStatus.Flags().BoolVarP(&options.dryRunFlag, "dry-run", "d", true, "only apply changes with --dry-run=false")
-
-	cmdIssue.AddCommand(cmdCreateIssue)
-	cmdIssue.AddCommand(cmdAutoUpdateIssuesStatus)
-	cmdIssue.AddCommand(cmdUpdateSizeAndPriority)
 	rootCmd.AddCommand(cmdIssue)
 }

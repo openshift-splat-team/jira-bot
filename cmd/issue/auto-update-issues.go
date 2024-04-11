@@ -4,18 +4,19 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/andygrunwald/go-jira"
 	"github.com/openshift-splat-team/jira-bot/pkg/util"
 	"github.com/spf13/cobra"
 )
 
-func checkSetSpikePoints(client *jira.Client, issue jira.Issue, options *issueCommandOptions) error {	
+func checkSetSpikePoints(client *jira.Client, issue jira.Issue, options *issueCommandOptions) error {
 	if issue.Fields.Type.Name == "Spike" {
 		if util.GetStoryPoints(issue.Fields.Unknowns) > 0 && !options.overrideFlag {
 			log.Fatalf("issue: %s already has assigned story points.  run again and provide --override=true to apply", issue.Key)
 			return nil
-		}		
+		}
 		if util.GetStoryPoints(issue.Fields.Unknowns) == 0 || options.overrideFlag {
 			propertyMap := map[string]interface{}{
 				"fields": map[string]interface{}{
@@ -48,13 +49,13 @@ func getFixVersionsFromParent(client *jira.Client, parentIssueKey string, issue 
 		if strings.Contains(fixVersion, "splat-nofixversion") {
 			noFixVersion = true
 			break
-		}	
+		}
 	}
 	return parentIssue.Fields.FixVersions, noFixVersion, err
 }
 
-func checkSetFixVersionFromParent(client *jira.Client, issue jira.Issue) (error) {
-	epic, feature := util.GetParentLinks(issue.Fields.Unknowns)	
+func checkSetFixVersionFromParent(client *jira.Client, issue jira.Issue) error {
+	epic, feature := util.GetParentLinks(issue.Fields.Unknowns)
 	var fixVersions []*jira.FixVersion
 	var err error
 	var noFixVersion bool
@@ -91,12 +92,12 @@ func checkSetFixVersionFromParent(client *jira.Client, issue jira.Issue) (error)
 				log.Printf("splat-nofixversion label found in parent, adding splat-nofixversion label to issue")
 			}
 		}
-	}	
-	
+	}
+
 	propertyMap := map[string]interface{}{
 		"fields": map[string]interface{}{
 			"fixVersions": fixVersions,
-			"labels": labels,
+			"labels":      labels,
 		},
 	}
 	versions := []string{}
@@ -105,7 +106,7 @@ func checkSetFixVersionFromParent(client *jira.Client, issue jira.Issue) (error)
 	}
 
 	log.Printf("setting fix version for issue: %s to %s", issue.ID, strings.Join(versions, ","))
-	if options.dryRunFlag {		
+	if options.dryRunFlag {
 		log.Printf("issue: %s would have had its fixVersions set.", issue.Key)
 		return nil
 	} else {
@@ -116,6 +117,7 @@ func checkSetFixVersionFromParent(client *jira.Client, issue jira.Issue) (error)
 	}
 	return nil
 }
+
 // autoUpdateIssuesInQuery according to rules set forth by the team
 func autoUpdateIssuesInQuery(jql string, options *issueCommandOptions) error {
 	log.Printf("preparing to auto-update issues found in query: %s", jql)
@@ -133,13 +135,15 @@ func autoUpdateIssuesInQuery(jql string, options *issueCommandOptions) error {
 
 	for _, issue := range issues {
 		if len(issue.Fields.FixVersions) == 0 {
+			time.Sleep(5 * time.Second)
 			err = checkSetFixVersionFromParent(jiraClient, issue)
 			if err != nil {
 				return fmt.Errorf("unable to get fix version from parent: %v", err)
 			}
 		}
-		
+
 		if options.defaultSpikeStoryPoints > 0 {
+			time.Sleep(5 * time.Second)
 			err = checkSetSpikePoints(jiraClient, issue, options)
 			if err != nil {
 				return fmt.Errorf("unable to set default spike story points: %v", err)

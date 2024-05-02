@@ -1,13 +1,10 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: vendor
+name: build 
 
 on:
   pull_request:
     types: [opened, labeled, unlabeled, synchronize]
 jobs:
-  verify:
+  image:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -15,5 +12,11 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.21'
-    - name: verify
-      run: go mod verify
+    - name: image
+      uses: redhat-actions/buildah-build@v2
+      id: build-image
+      with:
+        image: splat-bot
+        tags: latest ${{ github.sha }}
+        containerfiles: |
+          ./Containerfile      

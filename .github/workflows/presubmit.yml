@@ -1,13 +1,8 @@
-name: golangci-lint
-
+name: lint
 on:
   pull_request:
-    branches:
-      - main
-      - release-*
-  push:
-    tags:
-      - '*'
+    types: [opened, labeled, unlabeled, synchronize]
+
 permissions:
   contents: read
   # Optional: allow read access to pull request. Use with `only-new-issues` option.
@@ -15,7 +10,7 @@ permissions:
 
 jobs:
   golangci:
-    name: lint
+    name: golangci-lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,6 +25,8 @@ jobs:
           # When `install-mode` is `binary` (default) the value can be v1.2 or v1.2.3 or `latest` to use the latest version.
           # When `install-mode` is `goinstall` the value can be v1.2.3, `latest`, or the hash of a commit.
           version: v1.54
+
+          args: --timeout=30m --new-from-rev main
 
           # Optional: working directory, useful for monorepos
           # working-directory: somedir

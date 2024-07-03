@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -66,16 +67,15 @@ func createFutureSprints(ctx context.Context, client *jira.Client, futureSprints
 	log.Printf("found sprint %s\n", sprint.Name)
 
 	nameParts := strings.Split(sprint.Name, " ")
-	if len(nameParts) != 2 {
-		return fmt.Errorf("unable to parse sprint name: %s. sprint name must be in the format `Sprint xyz`", sprint.Name)
-	}
-	activeSprintNumber, err := strconv.Atoi(nameParts[1])
+	slices.Reverse(nameParts)
+
+	activeSprintNumber, err := strconv.Atoi(nameParts[0])
 	if err != nil {
 		return fmt.Errorf("unable to convert active sprint number to int: %v", err)
 	}
 
 	for i := 1; i <= int(futureSprints); i++ {
-		sprintName := fmt.Sprintf("Sprint %d", activeSprintNumber+i)
+		sprintName := fmt.Sprintf("OpenShift SPLAT - Sprint %d", activeSprintNumber+i)
 		skip := false
 		for _, knownScript := range sprints {
 			if knownScript.Name == sprintName {
@@ -104,7 +104,7 @@ func createFutureSprints(ctx context.Context, client *jira.Client, futureSprints
 				responseBody, _ := util.GetResponseBody(resp)
 				return fmt.Errorf("unable to create sprint: %v. response body: %s", err, responseBody)
 			}
-			log.Printf("created sprint %s\n", sprint.Name)
+			log.Printf("created sprint %s\n", newSprint.Name)
 		} else {
 			log.Printf("sprint %s would have been created as: %v. run again and provide --dry-run=false to apply.", sprintName, newSprint)
 		}

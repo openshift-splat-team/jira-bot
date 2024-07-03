@@ -22,25 +22,4 @@ TAGS="${TAGS:-}"
 OUTPUT="${OUTPUT:-bin/jira-bot}"
 export CGO_ENABLED=0
 
-case "${MODE}" in
-release)
-	LDFLAGS="${LDFLAGS} -s -w"
-	TAGS="${TAGS} release okd"
-	if test "${SKIP_GENERATION}" != y
-	then
-		go generate ./data
-	fi
-	;;
-dev)
-	;;
-*)
-	echo "unrecognized mode: ${MODE}" >&2
-	exit 1
-esac
-
-if (echo "${TAGS}" | grep -q 'libvirt')
-then
-	export CGO_ENABLED=1
-fi
-
 go build "${GOFLAGS}" -ldflags "${LDFLAGS}" -tags "${TAGS}" -o "${OUTPUT}" ./cmd

@@ -1,4 +1,4 @@
-# github.com/andygrunwald/go-jira v1.16.0 => github.com/openshift-splat-team/go-jira v0.0.0-20240326181044-4b1e81a3d483
+# github.com/andygrunwald/go-jira v1.16.0 => github.com/openshift-splat-team/go-jira v0.0.0-20240712161511-70691c5c4f8a
 ## explicit; go 1.15
 github.com/andygrunwald/go-jira
 # github.com/fatih/structs v1.1.0
@@ -122,4 +122,4 @@ gopkg.in/ini.v1
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# github.com/andygrunwald/go-jira => github.com/openshift-splat-team/go-jira v0.0.0-20240326181044-4b1e81a3d483
+# github.com/andygrunwald/go-jira => github.com/openshift-splat-team/go-jira v0.0.0-20240712161511-70691c5c4f8a

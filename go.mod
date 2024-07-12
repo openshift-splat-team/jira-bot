@@ -36,4 +36,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/andygrunwald/go-jira => github.com/openshift-splat-team/go-jira v0.0.0-20240326181044-4b1e81a3d483
+replace github.com/andygrunwald/go-jira => github.com/openshift-splat-team/go-jira v0.0.0-20240712161511-70691c5c4f8a

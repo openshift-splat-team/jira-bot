@@ -33,6 +33,10 @@ func appendLabel(filter string, options *issueCommandOptions) error {
 	}
 
 	for _, issue := range issues {
+		if issue.Fields.Priority.Name != "Undefined" {
+			log.Printf("issue: %s has a priority, skipping label application", issue.Key)
+			continue
+		}
 		labels := issue.Fields.Labels
 		hasLabel := false
 		for _, label := range labels {

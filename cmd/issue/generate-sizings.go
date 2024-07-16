@@ -94,7 +94,6 @@ func generateIssueSizings(filter string, options *issueCommandOptions) error {
 				return fmt.Errorf("unable to add comment %s: %v", url, err)
 			}
 		}
-		break
 	}
 	return nil
 }

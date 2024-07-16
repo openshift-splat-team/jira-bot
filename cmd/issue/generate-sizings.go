@@ -100,9 +100,9 @@ func generateIssueSizings(filter string, options *issueCommandOptions) error {
 }
 
 var cmdGenerateIssueSizings = &cobra.Command{
-	Use:   "export-as-csv [filter]",
-	Short: "Exports a query as CSV",
-	Long:  `Exports a query as CSV`,
+	Use:   "generate-sizings [filter]",
+	Short: "Generate projected sizings for unsized jira issues",
+	Long:  `Generate projected sizings for unsized jira issues`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		err := generateIssueSizings(args[0], &options)

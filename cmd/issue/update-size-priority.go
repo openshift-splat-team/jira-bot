@@ -17,16 +17,15 @@ func checkSetPoints(client *jira.Client, issue jira.Issue, options *issueCommand
 	}
 
 	if util.GetStoryPoints(issue.Fields.Unknowns) == 0 || options.overrideFlag {
-		propertyMap := map[string]interface{}{
-			"fields": map[string]interface{}{
-				util.FieldStoryPoints: options.points,
-			},
-		}
-
 		if options.dryRunFlag {
-			log.Printf("issue: %s would have been updated. run again and provide --dry-run=false to apply.", issue.Key)
+			log.Printf("issue: %s would have been assigned %d story point(s). run again and provide --dry-run=false to apply.", issue.Key, options.points)
 			return false, nil
 		} else {
+			propertyMap := map[string]interface{}{
+				"fields": map[string]interface{}{
+					util.FieldStoryPoints: options.points,
+				},
+			}
 			log.Printf("setting story points for issue: %s", issue.Key)
 			_, err := client.Issue.UpdateIssue(issue.Key, propertyMap)
 			if err != nil {

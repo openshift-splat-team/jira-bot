@@ -1,6 +1,8 @@
 module github.com/openshift-splat-team/jira-bot
 
-go 1.21
+go 1.25.0
+
+toolchain go1.25.0
 
 require (
 	github.com/andygrunwald/go-jira v1.16.0

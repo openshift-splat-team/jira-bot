@@ -10,22 +10,105 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Custom field IDs for on-premise Jira
 const (
-	FieldStoryPoints   = "customfield_12310243"
-	FieldStatusSummary = "customfield_12320841"
-	FieldEpicLink 	= "customfield_12311140"
-	FieldFeatureLink = "customfield_12318341"
-
+	OnPremFieldStoryPoints   = "customfield_12310243"
+	OnPremFieldStatusSummary = "customfield_12320841"
+	OnPremFieldEpicLink      = "customfield_12311140"
+	OnPremFieldFeatureLink   = "customfield_12318341"
 )
 
-func GetJiraClient() (*jira.Client, error) {
-	token := viper.GetString("personal_access_token")
+// Custom field IDs for Atlassian Cloud
+// Note: These may vary by organization - verify with your Jira instance
+const (
+	CloudFieldStoryPoints   = "customfield_10028"
+	CloudFieldStatusSummary = "customfield_10841"
+	CloudFieldEpicLink      = "customfield_10014"
+	CloudFieldFeatureLink   = "customfield_10341"
+)
 
-	tp := jira.BearerAuthTransport{
-		Token: token,
+// Dynamic field accessors
+var (
+	FieldStoryPoints   string
+	FieldStatusSummary string
+	FieldEpicLink      string
+	FieldFeatureLink   string
+)
+
+func isCloudInstance(baseURL string) bool {
+	return strings.Contains(strings.ToLower(baseURL), ".atlassian.net")
+}
+
+func initializeFieldIDs(baseURL string) {
+	if isCloudInstance(baseURL) {
+		FieldStoryPoints = CloudFieldStoryPoints
+		FieldStatusSummary = CloudFieldStatusSummary
+		FieldEpicLink = CloudFieldEpicLink
+		FieldFeatureLink = CloudFieldFeatureLink
+		log.Println("Using Atlassian Cloud field IDs")
+	} else {
+		FieldStoryPoints = OnPremFieldStoryPoints
+		FieldStatusSummary = OnPremFieldStatusSummary
+		FieldEpicLink = OnPremFieldEpicLink
+		FieldFeatureLink = OnPremFieldFeatureLink
+		log.Println("Using on-premise Jira field IDs")
+	}
+}
+
+func GetJiraClient() (*jira.Client, error) {
+	// Get base URL from environment or use default
+	baseURL := viper.GetString("base_url")
+	if len(baseURL) == 0 {
+		baseURL = "https://issues.redhat.com"
+		log.Printf("JIRA_BASE_URL not set, using default: %s\n", baseURL)
 	}
 
-	return jira.NewClient(tp.Client(), "https://issues.redhat.com/")
+	// Ensure base URL ends with /
+	if !strings.HasSuffix(baseURL, "/") {
+		baseURL += "/"
+	}
+
+	// Initialize custom field IDs based on instance type
+	initializeFieldIDs(baseURL)
+
+	var client *jira.Client
+	var err error
+
+	if isCloudInstance(baseURL) {
+		// Atlassian Cloud: Use BasicAuth with email + API token
+		email := viper.GetString("email")
+		apiToken := viper.GetString("api_token")
+
+		if len(email) == 0 || len(apiToken) == 0 {
+			return nil, fmt.Errorf("Atlassian Cloud requires JIRA_EMAIL and JIRA_API_TOKEN environment variables")
+		}
+
+		log.Printf("Connecting to Atlassian Cloud: %s (user: %s)\n", baseURL, email)
+
+		tp := jira.BasicAuthTransport{
+			Username: email,
+			Password: apiToken,
+		}
+
+		client, err = jira.NewClient(tp.Client(), baseURL)
+	} else {
+		// On-premise: Use Bearer token
+		token := viper.GetString("personal_access_token")
+
+		if len(token) == 0 {
+			return nil, fmt.Errorf("On-premise Jira requires JIRA_PERSONAL_ACCESS_TOKEN environment variable")
+		}
+
+		log.Printf("Connecting to on-premise Jira: %s\n", baseURL)
+
+		tp := jira.BearerAuthTransport{
+			Token: token,
+		}
+
+		client, err = jira.NewClient(tp.Client(), baseURL)
+	}
+
+	return client, err
 }
 
 func GetIssuesInQuery(client *jira.Client, query string) ([]jira.Issue, []string, error) {

@@ -87,7 +87,7 @@ func GetJiraClient() (*jira.Client, error) {
 
 		tp := jira.BasicAuthTransport{
 			Username: email,
-			APIToken: apiToken,
+			Password: apiToken,
 		}
 
 		client, err = jira.NewClient(tp.Client(), baseURL)

@@ -7,6 +7,7 @@ import (
 	"github.com/andygrunwald/go-jira"
 	"github.com/openshift-splat-team/jira-bot/pkg/util"
 	"github.com/spf13/cobra"
+	"github.com/trivago/tgo/tcontainer"
 )
 
 // CreateIssue creates an issue in a given project.  the creator of the
@@ -36,6 +37,12 @@ func createIssue(options *issueCommandOptions) (*jira.Issue, error) {
 		return nil, fmt.Errorf("unable to get Jira issue type: %v", err)
 	}
 
+	unknowns := tcontainer.NewMarshalMap()
+	unknowns["security"] = map[string]interface{}{
+		"id":   "11696",
+		"self": "https://issues.redhat.com/rest/api/2/securitylevel/11696",
+	}
+
 	issue, resp, err := client.Issue.Create(&jira.Issue{
 		Fields: &jira.IssueFields{
 			Summary:     options.summary,
@@ -46,10 +53,7 @@ func createIssue(options *issueCommandOptions) (*jira.Issue, error) {
 				IsWatching: false,
 				Watchers:   []*jira.Watcher{},
 			},
-			Security: map[string]interface{}{
-				"id":   "11696",
-				"self": "https://issues.redhat.com/rest/api/2/securitylevel/11696",
-			},
+			Unknowns: unknowns,
 		},
 	})
 	if err != nil {
